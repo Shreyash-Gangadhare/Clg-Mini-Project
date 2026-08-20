@@ -1,0 +1,13 @@
+Django==6.1
+djangorestframework==3.18.0
+djangorestframework-simplejwt==5.5.1
+channels==4.3.2
+channels-redis==4.3.0
+daphne==4.2.3
+django-cors-headers==4.9.0
+razorpay==2.0.1
+qrcode==8.2
+pillow==12.1.1
+pandas>=2.0
+numpy>=1.26
+asgiref==3.12.1

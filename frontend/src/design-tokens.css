@@ -1,0 +1,291 @@
+/* ============================================================
+   CampusEats Design Tokens
+   Indian food-delivery energy — warm, bold, appetite-driven
+   ============================================================ */
+
+/* --- Google Fonts Fallback Declaration --- */
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800;900&family=Syne:wght@700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* ---- Brand Colors ---- */
+  --color-accent:       #FF6B35;      /* chili-orange primary */
+  --color-accent-dark:  #E8491D;      /* deeper accent for hover/active */
+  --color-accent-glow:  rgba(255, 107, 53, 0.25);
+  --color-accent-muted: rgba(255, 107, 53, 0.12);
+
+  /* ---- Backgrounds ---- */
+  --color-bg:           #1A1A1A;      /* dark charcoal base */
+  --color-surface:      #242424;      /* card surface */
+  --color-surface-2:    #2E2E2E;      /* elevated surface */
+  --color-surface-3:    #383838;      /* hover state surface */
+  --color-overlay:      rgba(0, 0, 0, 0.65);
+
+  /* ---- Text ---- */
+  --color-text:         #FFF8F0;      /* warm off-white */
+  --color-text-muted:   #A8A5A0;
+  --color-text-faint:   #6B6866;
+
+  /* ---- Indian Veg/Non-veg ---- */
+  --color-veg:          #00A651;      /* FSSAI green */
+  --color-nonveg:       #E63C32;      /* FSSAI red */
+
+  /* ---- Semantic ---- */
+  --color-success:      #22C55E;
+  --color-warning:      #F59E0B;
+  --color-error:        #EF4444;
+  --color-info:         #3B82F6;
+
+  /* ---- Border ---- */
+  --color-border:       rgba(255, 248, 240, 0.08);
+  --color-border-accent: rgba(255, 107, 53, 0.35);
+
+  /* ---- Typography ---- */
+  --font-display:  'Baloo 2', 'Nunito', system-ui, cursive;
+  --font-hero:     'Syne', 'Baloo 2', system-ui, cursive;   /* editorial headlines */
+  --font-body:     'Inter', system-ui, sans-serif;
+
+  /* Type scale */
+  --text-xs:   0.75rem;   /* 12px */
+  --text-sm:   0.875rem;  /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg:   1.125rem;  /* 18px */
+  --text-xl:   1.25rem;   /* 20px */
+  --text-2xl:  1.5rem;    /* 24px */
+  --text-3xl:  1.875rem;  /* 30px */
+  --text-4xl:  2.25rem;   /* 36px */
+  --text-5xl:  3rem;      /* 48px */
+
+  /* Font weights */
+  --fw-normal:    400;
+  --fw-medium:    500;
+  --fw-semibold:  600;
+  --fw-bold:      700;
+  --fw-extrabold: 800;
+  --fw-black:     900;
+
+  /* ---- Spacing ---- */
+  --space-1:   0.25rem;
+  --space-2:   0.5rem;
+  --space-3:   0.75rem;
+  --space-4:   1rem;
+  --space-5:   1.25rem;
+  --space-6:   1.5rem;
+  --space-8:   2rem;
+  --space-10:  2.5rem;
+  --space-12:  3rem;
+  --space-16:  4rem;
+  --space-20:  5rem;
+  --space-24:  6rem;
+
+  /* ---- Radii ---- */
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   20px;
+  --radius-2xl:  24px;
+  --radius-3xl:  32px;
+  --radius-full: 9999px;
+
+  /* ---- Shadows ---- */
+  --shadow-sm:     0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md:     0 4px 12px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
+  --shadow-lg:     0 10px 30px rgba(0,0,0,0.6), 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-accent: 0 8px 24px rgba(255, 107, 53, 0.45);
+  --shadow-card-hover: 0 20px 50px rgba(0,0,0,0.75), 0 8px 20px rgba(255, 107, 53, 0.25);
+  --shadow-card:   0 2px 8px rgba(0,0,0,0.35);
+
+  /* ---- Category accent colors ---- */
+  --color-breakfast: #F59E0B;   /* amber — morning warmth */
+  --color-snacks:    #10B981;   /* emerald — snappy green */
+  --color-meals:     #FF6B35;   /* orange — the main act */
+  --color-beverages: #3B82F6;   /* blue — cool drinks */
+  --color-special:   #A855F7;   /* purple — premium */
+
+  /* ---- Transitions ---- */
+  --transition-fast:   150ms ease;
+  --transition-base:   250ms ease;
+  --transition-slow:   400ms ease;
+  --transition-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ---- Z-index ---- */
+  --z-base:    0;
+  --z-above:   10;
+  --z-nav:     100;
+  --z-drawer:  200;
+  --z-modal:   300;
+  --z-toast:   400;
+
+  /* ---- Layout ---- */
+  --max-width:     1200px;
+  --content-width: 480px;   /* mobile-first content column */
+  --nav-height:    64px;
+}
+
+/* ============================================================
+   Global Reset & Base
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--fw-normal);
+  line-height: 1.6;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+img, video, svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  background: none;
+}
+
+input, textarea, select {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+/* ============================================================
+   Utility Classes
+   ============================================================ */
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ============================================================
+   Shimmer / Skeleton
+   ============================================================ */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface) 0%,
+    var(--color-surface-3) 40%,
+    var(--color-surface) 80%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: var(--radius-md);
+}
+
+/* ============================================================
+   Steam Loop Animation (Hero)
+   ============================================================ */
+@keyframes steam-rise {
+  0%   { transform: translateY(0)    scaleX(1);   opacity: 0; }
+  15%  { opacity: 0.6; }
+  50%  { transform: translateY(-60px) scaleX(1.3); opacity: 0.4; }
+  100% { transform: translateY(-120px) scaleX(0.8); opacity: 0; }
+}
+
+.steam-particle {
+  position: absolute;
+  bottom: 0;
+  width: 12px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 248, 240, 0.18);
+  filter: blur(4px);
+  animation: steam-rise 3s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.steam-particle:nth-child(1) { left: 20%; animation-delay: 0s;    animation-duration: 2.8s; }
+.steam-particle:nth-child(2) { left: 40%; animation-delay: 0.6s;  animation-duration: 3.2s; }
+.steam-particle:nth-child(3) { left: 60%; animation-delay: 1.2s;  animation-duration: 2.6s; }
+.steam-particle:nth-child(4) { left: 75%; animation-delay: 0.3s;  animation-duration: 3.5s; }
+
+/* ============================================================
+   Scrollbar Styling
+   ============================================================ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-surface-3); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-accent-dark); }
+
+/* ============================================================
+   prefers-reduced-motion — disable physics, keep fades
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .steam-particle { animation: none; }
+}
+
+/* ============================================================
+   Confetti Burst
+   ============================================================ */
+@keyframes confetti-fall {
+  0%   { transform: translateY(-20px) rotate(0deg);   opacity: 1; }
+  100% { transform: translateY(100px) rotate(360deg); opacity: 0; }
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  animation: confetti-fall 0.8s ease forwards;
+  pointer-events: none;
+}
+
+/* ============================================================
+   Admin design register — same palette, restrained motion
+   ============================================================ */
+.admin-layout {
+  --transition-base:  150ms ease;   /* faster, no bounce */
+  background: #111111;
+}
+
+.admin-layout .card {
+  border-radius: var(--radius-md);  /* less rounded than student side */
+}
