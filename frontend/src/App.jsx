@@ -41,7 +41,7 @@ function StudentRoute({ children }) {
   const role = useAuthStore(s => s.role)
   const hydrated = useHydrated()
   if (!hydrated) return null  // wait for persist rehydration
-  if (!token) return <Navigate to="/login" replace />
+  if (!token) return <Navigate to="/home.html" replace />
   if (role === 'staff') return <Navigate to="/admin/dashboard" replace />
   return children
 }

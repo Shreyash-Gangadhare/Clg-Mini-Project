@@ -1,0 +1,285 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusEats — SIES GST Canteen. Skip the Line. Order Online.</title>
+  <meta name="description" content="CampusEats lets SIES GST students pre-order from SV Caterers canteen and skip the queue. Misal Pav, Masala Dosa, Schezwan Rice — ready when you are." />
+  <meta name="theme-color" content="#0d0d0d" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=Inter:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root{--bg:#0d0d0d;--bg-mid:#111111;--fg:#f0ece4;--fg-dim:rgba(240,236,228,.55);--accent:#C0392B;--accent-dim:rgba(192,57,43,.25);--font-hero:"Syne",sans-serif;--font-body:"Inter",sans-serif;--max-w:820px;--vid-maxw:848px}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:auto}
+    body{background:var(--bg);color:var(--fg);font-family:var(--font-body);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+    a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+    #scroll-bar{position:fixed;top:0;left:0;width:0%;height:2px;background:var(--accent);z-index:200;transition:width .05s linear}
+    #top-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:transparent;transition:background .35s,backdrop-filter .35s}
+    #top-nav.scrolled{background:rgba(13,13,13,.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.05)}
+    #top-nav .logo{font-family:var(--font-hero);font-weight:800;font-size:1.15rem;letter-spacing:-.02em;color:var(--fg)}
+    #top-nav .logo span{color:var(--accent)}
+    #top-nav .nav-cta{font-family:var(--font-body);font-size:.85rem;font-weight:600;padding:8px 20px;border:1.5px solid var(--accent);border-radius:999px;color:var(--fg);background:transparent;cursor:pointer;transition:background .2s,color .2s}
+    #top-nav .nav-cta:hover{background:var(--accent);color:#fff;text-decoration:none}
+    #film-spacer{height:1400vh;position:relative}
+    #film-stage{position:sticky;top:0;height:100vh;width:100%;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    #layer-bg{position:absolute;inset:0;background:var(--bg)}
+    #layer-hero{position:absolute;inset:0;background-image:url('/canteen-hero.jpg');background-size:cover;background-position:center top;opacity:0}
+    #layer-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(13,13,13,.45) 0%,rgba(13,13,13,.15) 40%,rgba(13,13,13,.7) 100%)}
+    #layer-video{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0}
+    #layer-video::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 35%,rgba(13,13,13,.75) 70%,rgba(13,13,13,.97) 100%);z-index:2;pointer-events:none}
+    #scrub-video{display:block;max-width:min(var(--vid-maxw),100%);max-height:100vh;width:100%;object-fit:contain;position:relative;z-index:1}
+    #layer-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:10}
+    .beat{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 clamp(24px,6vw,80px);opacity:0;will-change:opacity,transform;text-align:center}
+    .beat-1 .salutation{font-family:var(--font-hero);font-size:clamp(3rem,8vw,7.5rem);font-weight:900;line-height:1;letter-spacing:-.03em;color:var(--fg)}
+    .beat-1 .salutation em{font-style:normal;color:var(--accent)}
+    .beat-1 .sub{margin-top:clamp(16px,2.5vw,28px);font-family:var(--font-hero);font-size:clamp(1.1rem,3vw,2.4rem);font-weight:700;color:var(--fg-dim);line-height:1.3}
+    .beat-1 .sub em{color:var(--accent);font-style:normal}
+    .beat-2 .line1{font-family:var(--font-hero);font-size:clamp(1.5rem,4.5vw,4rem);font-weight:800;line-height:1.15;letter-spacing:-.02em;color:var(--fg)}
+    .beat-2 .line1 em{color:var(--accent);font-style:normal}
+    .beat-2 .line2{margin-top:clamp(12px,2vw,24px);font-family:var(--font-body);font-size:clamp(.95rem,2.2vw,1.55rem);font-weight:300;font-style:italic;color:var(--fg-dim);line-height:1.5}
+    .beat-3{gap:0}
+    .beat-3 .stagger-line{font-family:var(--font-hero);font-size:clamp(2rem,6vw,5.5rem);font-weight:900;letter-spacing:-.03em;line-height:1.05;color:var(--fg);opacity:0;transform:translateY(20px);transition:opacity .15s,transform .15s}
+    .beat-3 .stagger-line:last-child{color:var(--accent)}
+    .beat-4{flex-direction:column;gap:clamp(20px,3vw,40px)}
+    .beat-4 .badge{display:inline-block;font-family:var(--font-body);font-size:.7rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent-dim);padding:5px 14px;border-radius:999px}
+    .beat-4 .punchline{font-family:var(--font-body);font-size:clamp(1rem,2.8vw,2rem);font-weight:300;font-style:italic;color:var(--fg-dim);max-width:700px;line-height:1.55}
+    .beat-4 .punchline strong{font-weight:600;font-style:normal;color:var(--fg)}
+    .beat-5{justify-content:flex-end;padding-bottom:clamp(40px,8vh,80px)}
+    .beat-5 .credit-block{text-align:left;max-width:520px;width:100%}
+    .beat-5 .canteen-name{font-family:var(--font-hero);font-size:clamp(2rem,5vw,4rem);font-weight:900;color:var(--fg);line-height:1;letter-spacing:-.03em}
+    .beat-5 .canteen-sub{font-size:clamp(.8rem,1.5vw,1rem);font-weight:500;color:var(--fg-dim);margin-top:6px;letter-spacing:.06em;text-transform:uppercase}
+    .beat-6{justify-content:flex-start;align-items:flex-start;padding:clamp(24px,6vh,60px) clamp(24px,5vw,60px)}
+    .beat-6 .chapter-label{font-family:var(--font-body);font-size:.72rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);border-left:2px solid var(--accent);padding-left:10px}
+    #scroll-cue{position:fixed;bottom:36px;left:50%;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;align-items:center;gap:6px;opacity:1;transition:opacity .4s}
+    #scroll-cue.hidden{opacity:0;pointer-events:none}
+    #scroll-cue .cue-text{font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-dim)}
+    #scroll-cue .cue-arrow{width:20px;height:20px;border-right:1.5px solid var(--fg-dim);border-bottom:1.5px solid var(--fg-dim);transform:rotate(45deg);animation:cue-bounce 1.4s ease-in-out infinite}
+    @keyframes cue-bounce{0%,100%{transform:rotate(45deg) translateY(0)}50%{transform:rotate(45deg) translateY(5px)}}
+    #brand-page{background:var(--bg-mid);position:relative;z-index:20}
+    .section{max-width:var(--max-w);margin:0 auto;padding:clamp(60px,10vh,100px) clamp(24px,5vw,48px)}
+    .section+.section{border-top:1px solid rgba(255,255,255,.05)}
+    .manifesto-label,.steps-label,.menu-label{font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
+    .steps-label,.menu-label{margin-bottom:36px}
+    .manifesto-body{font-family:var(--font-hero);font-size:clamp(1.8rem,4vw,3.2rem);font-weight:800;line-height:1.15;letter-spacing:-.025em;color:var(--fg)}
+    .manifesto-body em{font-style:normal;color:var(--accent)}
+    .manifesto-footnote{margin-top:24px;font-size:clamp(.9rem,1.6vw,1.1rem);font-weight:300;font-style:italic;color:var(--fg-dim);line-height:1.7}
+    .steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px}
+    .step-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:24px 20px;transition:border-color .25s}
+    .step-card:hover{border-color:var(--accent-dim)}
+    .step-num{font-family:var(--font-hero);font-size:2.5rem;font-weight:900;color:var(--accent);line-height:1;margin-bottom:12px}
+    .step-title{font-weight:600;font-size:1rem;color:var(--fg);margin-bottom:6px}
+    .step-body{font-size:.88rem;color:var(--fg-dim);line-height:1.6}
+    .menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}
+    .menu-item{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:6px;transition:background .2s,border-color .2s}
+    .menu-item:hover{background:rgba(192,57,43,.08);border-color:var(--accent-dim)}
+    .menu-emoji{font-size:1.6rem}.menu-name{font-size:.88rem;font-weight:600;color:var(--fg);line-height:1.3}.menu-price{font-size:.78rem;color:var(--accent);font-weight:700}
+    .why-title{font-family:var(--font-hero);font-size:clamp(1.4rem,3vw,2.2rem);font-weight:800;color:var(--fg);margin-bottom:16px;letter-spacing:-.02em}
+    .why-body{font-size:clamp(.92rem,1.6vw,1.05rem);color:var(--fg-dim);line-height:1.8}
+    .why-body strong{color:var(--fg);font-weight:600}
+    .cta-section{text-align:center;padding:clamp(60px,10vh,100px) clamp(24px,5vw,48px)}
+    .cta-kicker{font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-dim);margin-bottom:16px}
+    .cta-headline{font-family:var(--font-hero);font-size:clamp(2rem,5vw,4rem);font-weight:900;letter-spacing:-.03em;color:var(--fg);line-height:1.05;margin-bottom:8px}
+    .cta-headline em{color:var(--accent);font-style:normal}
+    .cta-sub{font-size:clamp(.9rem,2vw,1.1rem);color:var(--fg-dim);font-style:italic;margin-bottom:36px}
+    .cta-btn{display:inline-block;font-family:var(--font-body);font-size:1rem;font-weight:700;padding:16px 48px;background:var(--accent);color:#fff;border-radius:999px;border:none;cursor:pointer;text-decoration:none;letter-spacing:.01em;transition:background .2s,transform .15s,box-shadow .2s}
+    .cta-btn:hover{background:#a93226;transform:translateY(-2px);box-shadow:0 8px 32px rgba(192,57,43,.4);text-decoration:none;color:#fff}
+    .cta-fine{margin-top:16px;font-size:.78rem;color:var(--fg-dim)}
+    footer{border-top:1px solid rgba(255,255,255,.05);padding:32px clamp(24px,5vw,48px);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;max-width:1200px;margin:0 auto}
+    footer .footer-logo{font-family:var(--font-hero);font-weight:800;font-size:1rem;color:var(--fg-dim)}
+    footer .footer-logo span{color:var(--accent)}
+    footer .footer-links{display:flex;gap:24px;flex-wrap:wrap}
+    footer .footer-links a{font-size:.8rem;color:var(--fg-dim);transition:color .2s}
+    footer .footer-links a:hover{color:var(--accent);text-decoration:none}
+    footer .footer-copy{font-size:.75rem;color:rgba(240,236,228,.3);width:100%}
+    @media(max-width:600px){.steps-grid{grid-template-columns:1fr 1fr}.menu-grid{grid-template-columns:repeat(2,1fr)}footer{flex-direction:column;text-align:center}footer .footer-links{justify-content:center}}
+  </style>
+</head>
+<body>
+
+<div id="scroll-bar"></div>
+
+<nav id="top-nav">
+  <div class="logo">Campus<span>Eats</span></div>
+  <a href="/login" class="nav-cta">Order karo &rarr;</a>
+</nav>
+
+<div id="scroll-cue">
+  <span class="cue-text">scroll karo</span>
+  <div class="cue-arrow"></div>
+</div>
+
+<div id="film-spacer">
+  <div id="film-stage">
+    <div id="layer-bg"></div>
+    <div id="layer-hero"></div>
+    <div id="layer-video">
+      <video id="scrub-video" src="/canteen-clip.mp4" preload="auto" muted playsinline webkit-playsinline></video>
+    </div>
+    <div id="layer-text">
+
+      <!-- BEAT 1 -->
+      <div class="beat beat-1" id="beat-1">
+        <div class="salutation">Dear <em>&#x0915;&#x0937;&#x094D;&#x091F;</em>mer,</div>
+        <div class="sub">ab khaane ke liye <em>&#x0915;&#x0937;&#x094D;&#x091F;</em> nahi,<br>bas click karo.</div>
+      </div>
+
+      <!-- BEAT 2 -->
+      <div class="beat beat-2" id="beat-2">
+        <div class="line1">kyunki aapka order queue mein hai.<br><em>"Aap"</em> nahi.</div>
+        <div class="line2">Queue hum sambhaal lenge, bhookh aap sambhaaliye.</div>
+      </div>
+
+      <!-- BEAT 3 -->
+      <div class="beat beat-3" id="beat-3">
+        <div class="stagger-line" id="sl-1">Bhookh lagi thi.</div>
+        <div class="stagger-line" id="sl-2">Canteen gaye.</div>
+        <div class="stagger-line" id="sl-3">Queue dekhi.</div>
+        <div class="stagger-line" id="sl-4">Phir technology invent kar di.</div>
+      </div>
+
+      <!-- BEAT 4 -->
+      <div class="beat beat-4" id="beat-4">
+        <span class="badge">The honest truth</span>
+        <p class="punchline">"Because standing in a queue doesn't make<br><strong>the food taste better.</strong>"</p>
+      </div>
+
+      <!-- BEAT 5 — hero photo label -->
+      <div class="beat beat-5" id="beat-5">
+        <div class="credit-block">
+          <div class="canteen-name">SIES College Canteen</div>
+          <div class="canteen-sub">SV Caterers &middot; Nerul Campus &middot; Est. Every 9 AM lecture since forever</div>
+        </div>
+      </div>
+
+      <!-- BEAT 6 — video chapter label -->
+      <div class="beat beat-6" id="beat-6">
+        <div class="chapter-label">Chapter 01 &mdash; The Counter</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- BRAND PAGE -->
+<div id="brand-page">
+
+  <div class="section">
+    <div class="manifesto-label">The deal</div>
+    <div class="manifesto-body">72 items. Zero queues.<br>Hot food, <em>cold waiting times.</em></div>
+    <div class="manifesto-footnote">Pre-order from SV Caterers on your phone, pick up at the counter when it's ready. No token scramble, no "ek minute" that means ten, no cold Misal Pav because you were third in line at 1:05 PM.</div>
+  </div>
+
+  <div class="section">
+    <div class="steps-label">Yeh kaise kaam karta hai</div>
+    <div class="steps-grid">
+      <div class="step-card"><div class="step-num">01</div><div class="step-title">Browse karo</div><div class="step-body">Full 72-item menu. Every dosa, every sandwich, every lassi. Filter by mood, not by what's left.</div></div>
+      <div class="step-card"><div class="step-num">02</div><div class="step-title">Slot lo</div><div class="step-body">Pick a 15-minute pickup window. The canteen knows you're coming. No surprises for anyone.</div></div>
+      <div class="step-card"><div class="step-num">03</div><div class="step-title">Pay karo</div><div class="step-body">UPI, card, whatever &mdash; paid, confirmed, done. QR code on your screen.</div></div>
+      <div class="step-card"><div class="step-num">04</div><div class="step-title">Utha lo</div><div class="step-body">Phone notification + QR scan at counter. Your food is ready. Queue is someone else's problem.</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="menu-label">Jo log order karte hain woh khaate hain</div>
+    <div class="menu-grid">
+      <div class="menu-item"><span class="menu-emoji">&#127838;</span><span class="menu-name">Masala Dosa</span><span class="menu-price">&#8377;60</span></div>
+      <div class="menu-item"><span class="menu-emoji">&#127835;</span><span class="menu-name">Misal Pav</span><span class="menu-price">&#8377;60</span></div>
+      <div class="menu-item"><span class="menu-emoji">&#128293;</span><span class="menu-name">Schezwan Rice</span><span class="menu-price">&#8377;80</span></div>
+      <div class="menu-item"><span class="menu-emoji">&#127836;</span><span class="menu-name">Hakka Noodles</span><span class="menu-price">&#8377;70</span></div>
+      <div class="menu-item"><span class="menu-emoji">&#129472;</span><span class="menu-name">Cheese Grill Sandwich</span><span class="menu-price">&#8377;120</span></div>
+      <div class="menu-item"><span class="menu-emoji">&#127834;</span><span class="menu-name">Dal Khichdi</span><span class="menu-price">&#8377;80</span></div>
+      <div class="menu-item"><span class="menu-emoji">&#129380;</span><span class="menu-name">Milkshake</span><span class="menu-price">&#8377;40</span></div>
+      <div class="menu-item"><span class="menu-emoji">&#9749;</span><span class="menu-name">Filter Coffee</span><span class="menu-price">&#8377;25</span></div>
+    </div>
+    <div style="margin-top:28px;font-size:.82rem;color:var(--fg-dim);font-style:italic;">+ 64 more items. Sabzi, dosa, sandwich, juice &mdash; sab kuch. <a href="/login" style="color:var(--accent);margin-left:6px;">Full menu dekho &rarr;</a></div>
+  </div>
+
+  <div class="section">
+    <div class="why-title">Kyun banaya yeh?</div>
+    <div class="why-body">Because at 1:15 PM between lectures, <strong>a 20-minute queue is 20 minutes of your break gone</strong>, and the Masala Dosa is sold out by the time you get to the front anyway.<br><br>SV Caterers makes genuinely good food. The problem was never the food &mdash; it was the friction. <strong>CampusEats removes the friction.</strong> The bhaiya at the counter still cooks it fresh; you just don't stand around watching him do it.<br><br>Built by SIES GST CS students, for SIES GST students. <strong>Canteen-first, not startup-first.</strong></div>
+  </div>
+
+  <div class="cta-section">
+    <div class="cta-kicker">Ek kaam karo</div>
+    <div class="cta-headline">Bhookh lage tab<br><em>queue mein mat khado.</em></div>
+    <div class="cta-sub">Account banana free hai. Queue mein khade rehna free nahi.</div>
+    <a href="/login" class="cta-btn">Pehla order karo &rarr;</a>
+    <div class="cta-fine">SIES GST email se register karo. Takes 30 seconds.</div>
+  </div>
+
+  <footer>
+    <div class="footer-logo">Campus<span>Eats</span></div>
+    <div class="footer-links">
+      <a href="/login">Order</a>
+      <a href="/admin/login">Canteen Staff</a>
+      <a href="mailto:canteen@sies.edu.in">Contact</a>
+    </div>
+    <div class="footer-copy">CampusEats &middot; SV Caterers &middot; SIES College of Arts, Science and Commerce, Nerul. Not affiliated with Zomato, Swiggy, or any other app that charges 18% delivery.</div>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var scrollBar=document.getElementById('scroll-bar'),topNav=document.getElementById('top-nav'),scrollCue=document.getElementById('scroll-cue'),filmSpacer=document.getElementById('film-spacer'),layerHero=document.getElementById('layer-hero'),layerVideo=document.getElementById('layer-video'),scrubVideo=document.getElementById('scrub-video');
+  var beat1=document.getElementById('beat-1'),beat2=document.getElementById('beat-2'),beat3=document.getElementById('beat-3'),beat4=document.getElementById('beat-4'),beat5=document.getElementById('beat-5'),beat6=document.getElementById('beat-6');
+  var sl=[document.getElementById('sl-1'),document.getElementById('sl-2'),document.getElementById('sl-3'),document.getElementById('sl-4')];
+  var CH={beat1:{i:-0.05,p:0.0,o:0.09},beat2:{i:0.10,p:0.145,o:0.195},beat3:{i:0.20,p:0.25,o:0.34},beat4:{i:0.345,p:0.39,o:0.46},hero:{i:0.46,p:0.53,o:0.61},beat5:{i:0.48,p:0.55,o:0.60},video:{i:0.62,p:0.65,o:0.91},beat6:{i:0.625,p:0.635,o:0.70}};
+  var SI=[0.200,0.245,0.275,0.305],SP=[0.230,0.268,0.298,0.330];
+  var vDur=0;
+  scrubVideo.addEventListener('loadedmetadata',function(){vDur=scrubVideo.duration;});
+  if(scrubVideo.readyState>=1)vDur=scrubVideo.duration;
+  function ease(x){return x<0.5?2*x*x:1-Math.pow(-2*x+2,2)/2;}
+  function op(ch,p){var i=ch.i,pk=ch.p,o=ch.o;if(p<i)return 0;if(p<pk)return ease((p-i)/(pk-i));if(p<o)return ease(1-(p-pk)/(o-pk));return 0;}
+  function opIn(ch,p){if(p<ch.i)return 0;if(p<ch.p)return ease((p-ch.i)/(ch.p-ch.i));return 1;}
+  function getProg(){var rect=filmSpacer.getBoundingClientRect(),h=filmSpacer.offsetHeight-window.innerHeight,s=-rect.top;return Math.max(0,Math.min(1,s/h));}
+  var ticking=false,lastP=-1;
+  function render(p){
+    var fd=document.documentElement.scrollHeight-window.innerHeight;
+    scrollBar.style.width=((window.scrollY/fd)*100).toFixed(2)+'%';
+    topNav.classList.toggle('scrolled',window.scrollY>40);
+    scrollCue.classList.toggle('hidden',p>0.04);
+    beat1.style.opacity=op(CH.beat1,p);
+    beat2.style.opacity=op(CH.beat2,p);
+    beat3.style.opacity=op(CH.beat3,p);
+    beat4.style.opacity=op(CH.beat4,p);
+    beat5.style.opacity=op(CH.beat5,p);
+    beat6.style.opacity=op(CH.beat6,p);
+    sl.forEach(function(el,i){
+      var t=opIn({i:SI[i],p:SP[i]},p);
+      el.style.opacity=t;
+      el.style.transform='translateY('+(( 1-t)*20)+'px)';
+    });
+    var heroT=op({i:CH.hero.i,p:CH.hero.p,o:CH.video.p},p);
+    layerHero.style.opacity=heroT;
+    var vidT=op(CH.video,p);
+    layerVideo.style.opacity=vidT;
+    if(vDur>0&&vidT>0){
+      var vs=CH.video.i,ve=CH.video.o,vp=Math.max(0,Math.min(1,(p-vs)/(ve-vs))),t2=vp*vDur;
+      if(Math.abs(scrubVideo.currentTime-t2)>0.05)scrubVideo.currentTime=t2;
+    }
+  }
+  function onScroll(){
+    if(!ticking){
+      requestAnimationFrame(function(){
+        var p=getProg();
+        if(Math.abs(p-lastP)>0.0001){render(p);lastP=p;}
+        ticking=false;
+      });
+      ticking=true;
+    }
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  window.addEventListener('resize',function(){lastP=-1;onScroll();},{passive:true});
+  render(0);
+  scrubVideo.load();
+})();
+</script>
+</body>
+</html>
+
+

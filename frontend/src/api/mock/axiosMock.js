@@ -363,5 +363,50 @@ export function installAxiosMock(axiosInstance) {
     }]
   })
 
+  // ── Recommendations — item-level ─────────────────────────────
+  mock.onGet(/\/recommendations\/item\/(\d+)\/$/).reply((config) => {
+    const itemIdMatch = config.url.match(/\/recommendations\/item\/(\d+)\//)
+    const itemId = itemIdMatch ? parseInt(itemIdMatch[1], 10) : -1
+    const params = config.params || {}
+    const excludeRaw = params.exclude || ''
+    const excludeIds = new Set(excludeRaw.split(',').filter(Boolean).map(Number))
+    const n = Math.min(6, parseInt(params.n || '3', 10))
+    excludeIds.add(itemId)
+
+    const targetItem = menuItems.find(m => m.id === itemId)
+    const available = menuItems.filter(m => m.is_available && !excludeIds.has(m.id))
+    const sameCat = available.filter(m => targetItem && m.ui_category === targetItem.ui_category)
+    const other = available.filter(m => !targetItem || m.ui_category !== targetItem.ui_category)
+    const recs = [...sameCat, ...other].slice(0, n)
+
+    return [200, {
+      item_id: itemId,
+      recommendations: recs.map(m => ({
+        id: m.id, name: m.name, price: m.price, emoji: m.emoji,
+        veg_flag: m.veg_flag, is_available: m.is_available, category: m.category,
+      })),
+      source: 'fallback_category',
+    }]
+  })
+
+  // ── Recommendations — cart-level ─────────────────────────────
+  mock.onGet('/recommendations/cart/').reply((config) => {
+    const params = config.params || {}
+    const idsRaw = params.ids || ''
+    const cartIds = new Set(idsRaw.split(',').filter(Boolean).map(Number))
+    const n = Math.min(4, parseInt(params.n || '2', 10))
+    const available = menuItems.filter(m => m.is_available && !cartIds.has(m.id))
+    const recs = available.slice(0, n)
+
+    return [200, {
+      cart_ids: [...cartIds],
+      recommendations: recs.map(m => ({
+        id: m.id, name: m.name, price: m.price, emoji: m.emoji,
+        veg_flag: m.veg_flag, is_available: m.is_available, category: m.category,
+      })),
+      source: 'fallback_popularity',
+    }]
+  })
+
   return mock
 }

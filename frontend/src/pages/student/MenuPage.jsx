@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getMenu, getSlots, getSlotCapacities } from '../../api/client'
+import { getMenu, getSlots, getSlotCapacities, getItemRecommendations } from '../../api/client'
 import { useCartStore } from '../../store/cartStore'
 import { VegDot } from '../../components/VegDot'
 import { CategoryChipBar } from '../../components/CategoryChipBar'
 import { CapacityBadge } from '../../components/CapacityBadge'
+import { RecommendationStrip } from '../../components/RecommendationStrip'
 import { filterMenuByCategory } from '../../api/mock/fixtures'
 
 // ── Category config ─────────────────────────────────────────
@@ -560,6 +561,61 @@ function HorizontalSkeleton() {
   )
 }
 
+// ── Recommendation strip wrapper for a single menu card ──────
+// Fetches lazily on first visibility using IntersectionObserver.
+function MenuCardWithRecs({ item, index, slotCapacity, slotSelected, categoryColor }) {
+  const wrapperRef = useRef(null)
+  const [recs, setRecs] = useState(null)
+  const [recsSource, setRecsSource] = useState(null)
+  const fetchedRef = useRef(false)
+  // Select a stable primitive so Zustand's getSnapshot doesn't see a new
+  // array reference on every render (which caused an infinite re-render loop).
+  const cartIdsStr = useCartStore(s => s.items.map(ci => ci.menuItem.id).join(','))
+  const cartIds = cartIdsStr ? cartIdsStr.split(',').map(Number) : []
+
+  useEffect(() => {
+    if (!wrapperRef.current) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !fetchedRef.current) {
+          fetchedRef.current = true
+          getItemRecommendations(item.id, cartIds, 3)
+            .then(r => {
+              setRecs(r.data.recommendations || [])
+              setRecsSource(r.data.source)
+            })
+            .catch(() => setRecs([]))
+        }
+      },
+      { rootMargin: '100px' }
+    )
+    observer.observe(wrapperRef.current)
+    return () => observer.disconnect()
+  }, [item.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <div ref={wrapperRef}>
+      <MenuCard
+        item={item}
+        index={index}
+        slotCapacity={slotCapacity}
+        slotSelected={slotSelected}
+        categoryColor={categoryColor}
+      />
+      {recs && recs.length > 0 && (
+        <div style={{ padding: '0 12px 4px' }}>
+          <RecommendationStrip
+            items={recs}
+            label="Also ordered"
+            source={recsSource}
+            accent={categoryColor || 'var(--color-accent)'}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Section header ───────────────────────────────────────────
 function SectionHeader({ category, itemCount, catMeta }) {
   const meta = catMeta || CAT_META[category] || CAT_META.all
@@ -761,7 +817,7 @@ export default function MenuPage() {
             <AnimatePresence mode="popLayout">
               {filteredItems.map((item, i) => (
                 <div key={item.id} role="listitem">
-                  <MenuCard
+                  <MenuCardWithRecs
                     item={item}
                     index={i}
                     slotCapacity={slotCapForSelected}

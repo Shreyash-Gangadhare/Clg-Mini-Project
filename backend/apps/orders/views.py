@@ -353,8 +353,8 @@ class ItemRecommendationsView(APIView):
         sim_df = _get_cached_sim()
         if sim_df is None:
             from .recommendations import build_cooccurrence_matrix, compute_cosine_similarity
-            cooc = build_cooccurrence_matrix(all_orders)
-            sim_df = compute_cosine_similarity(cooc)
+            _cooc, pivot = build_cooccurrence_matrix(all_orders)
+            sim_df = compute_cosine_similarity(pivot)
             if not sim_df.empty:
                 _set_cached_sim(sim_df)
 
@@ -402,8 +402,8 @@ class CartRecommendationsView(APIView):
         sim_df = _get_cached_sim()
         if sim_df is None:
             from .recommendations import build_cooccurrence_matrix, compute_cosine_similarity
-            cooc = build_cooccurrence_matrix(all_orders)
-            sim_df = compute_cosine_similarity(cooc)
+            _cooc, pivot = build_cooccurrence_matrix(all_orders)
+            sim_df = compute_cosine_similarity(pivot)
             if not sim_df.empty:
                 _set_cached_sim(sim_df)
 

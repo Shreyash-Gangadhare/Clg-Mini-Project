@@ -10,22 +10,101 @@ from apps.menu.models import MenuItem
 from apps.slots.models import Slot, SlotItemCapacity
 
 
+# 72 items — ported from frontend/src/api/mock/fixtures.js (2026-08-21)
+# Each entry maps directly to MenuItem model fields.
+# `category` values: 'ready_stock' | 'made_to_order' (Django model choices)
 MENU_FIXTURES = [
-    dict(name='Vada Pav', description="Mumbai's iconic street food — spiced potato fritter in a soft bun with chutneys", price='15.00', category='ready_stock', prep_time_minutes=0, veg_flag=True),
-    dict(name='Misal Pav', description='Spicy sprouted moth beans curry topped with farsan, onions, tomatoes — served with pav', price='45.00', category='made_to_order', prep_time_minutes=8, veg_flag=True),
-    dict(name='Poha', description='Flattened rice tempered with mustard seeds, curry leaves, onion, and turmeric', price='30.00', category='ready_stock', prep_time_minutes=0, veg_flag=True),
-    dict(name='Samosa (2 pcs)', description='Crispy fried pastry filled with spiced potato and peas, served with green chutney', price='20.00', category='ready_stock', prep_time_minutes=0, veg_flag=True),
-    dict(name='Cold Coffee', description='Blended iced coffee with milk and sugar — thick, creamy, and chilled', price='40.00', category='ready_stock', prep_time_minutes=0, veg_flag=True),
-    dict(name='Masala Chai', description='Strong black tea brewed with ginger, cardamom, cinnamon, and milk', price='12.00', category='ready_stock', prep_time_minutes=0, veg_flag=True),
-    dict(name='Cutting Chai', description='Half-glass strong masala tea — the quintessential Mumbai quick-fix', price='10.00', category='ready_stock', prep_time_minutes=0, veg_flag=True),
-    dict(name='Veg Sandwich', description='Toasted bread with cucumber, tomato, potato, cheese, and green chutney', price='35.00', category='made_to_order', prep_time_minutes=5, veg_flag=True),
-    dict(name='Paneer Sandwich', description='Grilled sandwich stuffed with spiced cottage cheese, peppers, and onions', price='55.00', category='made_to_order', prep_time_minutes=7, veg_flag=True),
-    dict(name='Chicken Sandwich', description='Grilled chicken tikka sandwich with lettuce, mayo, and green chutney', price='70.00', category='made_to_order', prep_time_minutes=7, veg_flag=False),
-    dict(name='Maggi', description='2-minute noodles cooked with masala, veggies, and a dash of butter', price='30.00', category='made_to_order', prep_time_minutes=5, veg_flag=True),
-    dict(name='Veg Fried Rice', description='Wok-tossed basmati rice with seasonal vegetables, soy sauce, and egg-free', price='60.00', category='made_to_order', prep_time_minutes=10, veg_flag=True),
-    dict(name='Paneer Fried Rice', description='Wok-tossed rice with golden paneer cubes, bell peppers, and house sauce', price='75.00', category='made_to_order', prep_time_minutes=10, veg_flag=True),
-    dict(name="Today's Special: Pav Bhaji", description='Buttery mashed vegetable curry served sizzling on a tawa with toasted butter pav', price='55.00', category='made_to_order', prep_time_minutes=12, veg_flag=True),
-    dict(name='Lemon Soda', description='Chilled sparkling water with freshly squeezed lemon, black salt, and sugar', price='25.00', category='ready_stock', prep_time_minutes=0, veg_flag=True),
+    # ── HOT REFRESHMENTS ──────────────────────────────────────────
+    dict(name='Tea',                     description="Classic cutting chai — strong, milky, and spiced just right for that 9 AM lecture survival",                          price='10.00',  category='ready_stock',  prep_time_minutes=2,  veg_flag=True),
+    dict(name='Coffee',                  description="Hot milk coffee, South Indian style — rich, aromatic, and dangerously addictive",                                     price='15.00',  category='ready_stock',  prep_time_minutes=2,  veg_flag=True),
+    dict(name='Filter Coffee',           description="Authentic South Indian drip coffee — dark decoction, frothy milk, served in a davara set",                           price='25.00',  category='ready_stock',  prep_time_minutes=3,  veg_flag=True),
+
+    # ── FAST FOOD / SNACKS ────────────────────────────────────────
+    dict(name='Vadapav',                 description="Mumbai's soul food — crispy batata vada in a pav with garlic chutney. The OG street snack",                          price='18.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Potato Vada',             description="Golden spiced potato fritter, straight out of the kadai — best eaten scorching hot",                                 price='15.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Samosa',                  description="Crispy triangle of joy — spiced potato-pea filling, fried to golden perfection",                                     price='16.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Samosa Pav',              description="Samosa meets pav in the greatest crossover since any Avengers movie",                                                price='20.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Dhokla',                  description="Soft, spongy Gujarati steamed delight — tempered with mustard seeds and curry leaves",                               price='35.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Bhaji One Plate',         description="Mixed vegetable bhaji with a generous ghee finish — pairs with anything, honestly",                                  price='40.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Bhaji Pav',               description="Buttery bhaji with soft pav — because some problems are solved with carbs and ghee",                                 price='25.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Patice',                  description="Aloo-stuffed fried cutlet, crispy shell, soft spiced interior — a canteen classic",                                  price='25.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Misal Pav',               description="Spicy moth beans gravy, farsan on top, pav on the side — Maharashtra's proudest export",                            price='60.00',  category='made_to_order', prep_time_minutes=8,  veg_flag=True),
+
+    # ── BREAKFAST ─────────────────────────────────────────────────
+    dict(name='Upma',                    description="Soft semolina upma tempered with mustard, cashews, and curry leaves — breakfast done right",                         price='40.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Poha',                    description="Flattened rice with mustard seeds, onion, turmeric and lemon — the breakfast that never fails",                      price='40.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Sabudana Khichdi',        description="Pearl sago stir-fried with peanuts, green chilli, and ghee — comfort in every bite",                                 price='50.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Sabudana Vada',           description="Crispy sago and peanut fritter — airy outside, pillowy inside, served with mint chutney",                           price='50.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+
+    # ── USAL SNACKS ───────────────────────────────────────────────
+    dict(name='Vada Usal Single',        description="One vada dunked in spicy sprouted bean curry — for when one is somehow enough",                                      price='45.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Vada Usal with 2 Pav',   description="Vada usal upgraded — now with pav. This is the combo that powers exam season",                                       price='60.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Samosa Usal Single',      description="A samosa drowning in usal curry — this crossover lives rent-free in our hearts",                                     price='50.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Usal with 2 Pav',         description="Hot sprouted bean gravy, two soft pav on the side — the Maharashtrian power lunch",                                  price='60.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+
+    # ── SOUTH INDIAN ──────────────────────────────────────────────
+    dict(name='Idli Sambar',             description="Two steamed rice cakes with piping hot tamarind sambar and coconut chutney on the side",                            price='40.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Medu Vada',               description="Crispy fried lentil doughnuts with sambar — South India's answer to the perfect snack",                              price='50.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Sada Dosa',               description="Thin, crispy plain dosa — pure and unadulterated. Served with sambar + two chutneys",                               price='50.00',  category='made_to_order', prep_time_minutes=5,  veg_flag=True),
+    dict(name='Masala Dosa',             description="Crispy dosa stuffed with spiced potato masala — the original Indian street crepe",                                   price='60.00',  category='made_to_order', prep_time_minutes=7,  veg_flag=True),
+    dict(name='Cheese Masala Dosa',      description="Masala dosa with a generous cheese blanket — because everything is better with cheese",                              price='80.00',  category='made_to_order', prep_time_minutes=8,  veg_flag=True),
+    dict(name='Chinese Dosa',            description="Dosa stuffed with Indo-Chinese filling — a Mumbai college invention that works perfectly",                           price='70.00',  category='made_to_order', prep_time_minutes=8,  veg_flag=True),
+    dict(name='Rava Dosa',               description="Lacy, crispy semolina crepe — netting-like texture that holds its crunch beautifully",                              price='55.00',  category='made_to_order', prep_time_minutes=7,  veg_flag=True),
+    dict(name='Rava Masala Dosa',        description="Crispy rava dosa stuffed with potato masala — texture upgrade on a classic",                                         price='70.00',  category='made_to_order', prep_time_minutes=8,  veg_flag=True),
+    dict(name='Set Dosa',                description="Three soft, spongy mini-dosas served as a set — lighter and fluffier than the classic",                              price='60.00',  category='made_to_order', prep_time_minutes=7,  veg_flag=True),
+    dict(name='Cheese Masala Rava Dosa', description="The final form — rava dosa + masala + cheese. Peak dosa evolution achieved",                                         price='85.00',  category='made_to_order', prep_time_minutes=10, veg_flag=True),
+    dict(name='Uttapam',                 description="Thick, soft rice pancake topped with onion and tomato — breakfast royalty from the South",                           price='50.00',  category='made_to_order', prep_time_minutes=7,  veg_flag=True),
+    dict(name='Onion Uttapam',           description="Uttapam loaded with caramelised onions — sweet, soft, and deeply satisfying",                                        price='60.00',  category='made_to_order', prep_time_minutes=7,  veg_flag=True),
+    dict(name='Masala Uttapam',          description="Uttapam with spiced masala topping — a complete meal that doesn't apologise for being filling",                       price='60.00',  category='made_to_order', prep_time_minutes=8,  veg_flag=True),
+
+    # ── INDIAN MEALS ──────────────────────────────────────────────
+    dict(name='Poori Bhaji',             description="Puffy deep-fried poori with spiced potato bhaji — weekend vibes on a weekday",                                       price='70.00',  category='made_to_order', prep_time_minutes=8,  veg_flag=True),
+    dict(name='Chapati Bhaji',           description="Soft wheat chapatis with mixed vegetable bhaji — the wholesome homestyle meal",                                      price='70.00',  category='made_to_order', prep_time_minutes=8,  veg_flag=True),
+    dict(name='Dal Rice',                description="Simple yellow dal with steamed rice — the meal that gets you through a 3-hour lab session",                          price='70.00',  category='made_to_order', prep_time_minutes=5,  veg_flag=True),
+    dict(name='Dal Khichdi',             description="Slow-cooked lentil-rice porridge with ghee drizzle — comfort food for the soul",                                     price='80.00',  category='made_to_order', prep_time_minutes=8,  veg_flag=True),
+    dict(name='Lunch Thali',             description="Full canteen thali — dal, sabzi, rice, chapati, papad, and pickle. Eat well, study harder",                          price='150.00', category='made_to_order', prep_time_minutes=10, veg_flag=True),
+
+    # ── INDO-CHINESE ──────────────────────────────────────────────
+    dict(name='Manchurian',              description="Crispy veggie balls tossed in Indo-Chinese manchurian sauce — not Chinese, definitely delicious",                    price='30.00',  category='made_to_order', prep_time_minutes=8,  veg_flag=True),
+    dict(name='Manchurian Pav',          description="Manchurian gravy served in a pav. Mumbai fusion at its most unhinged and glorious",                                  price='35.00',  category='made_to_order', prep_time_minutes=8,  veg_flag=True),
+    dict(name='Manchurian Gravy',        description="Manchurian in a thick, saucy gravy — the version you pour over everything else",                                     price='60.00',  category='made_to_order', prep_time_minutes=10, veg_flag=True),
+    dict(name='Fried Rice',              description="Wok-tossed vegetable fried rice — the Indo-Chinese staple that never gets old",                                      price='70.00',  category='made_to_order', prep_time_minutes=10, veg_flag=True),
+    dict(name='Schezwan Rice',           description="Fiery schezwan-tossed rice — for when regular fried rice just isn't exciting enough",                                price='80.00',  category='made_to_order', prep_time_minutes=10, veg_flag=True),
+    dict(name='Manchurian Rice',         description="Fried rice topped with manchurian — the combo that orders itself",                                                   price='90.00',  category='made_to_order', prep_time_minutes=12, veg_flag=True),
+    dict(name='Hakka Noodles',           description="Stir-fried noodles with crisp veggies and soy sauce — the campus Indo-Chinese classic",                              price='70.00',  category='made_to_order', prep_time_minutes=10, veg_flag=True),
+    dict(name='Schezwan Noodles',        description="Hakka noodles hit with schezwan chilli paste — spicy, punchy, completely worth it",                                  price='80.00',  category='made_to_order', prep_time_minutes=10, veg_flag=True),
+    dict(name='Manchurian Noodles',      description="Noodles + manchurian in a single bowl — the double threat combo that packs a punch",                                price='90.00',  category='made_to_order', prep_time_minutes=12, veg_flag=True),
+
+    # ── SANDWICHES ────────────────────────────────────────────────
+    dict(name='Plain Sandwich',          description="Simple bread sandwich with butter and green chutney — the reliable baseline",                                        price='35.00',  category='ready_stock',  prep_time_minutes=3,  veg_flag=True),
+    dict(name='Toast Sandwich',          description="Toasted bread with fresh veggies and chutney — crispy edges, soft filling",                                          price='40.00',  category='ready_stock',  prep_time_minutes=4,  veg_flag=True),
+    dict(name='Cheese Sandwich',         description="Generously cheesed sandwich — because cheese solves most problems",                                                  price='60.00',  category='ready_stock',  prep_time_minutes=4,  veg_flag=True),
+    dict(name='Masala Sandwich',         description="Sandwich with spiced potato masala filling — the canteen cult favourite",                                             price='60.00',  category='ready_stock',  prep_time_minutes=4,  veg_flag=True),
+    dict(name='Cheese Masala Sandwich',  description="Masala sandwich, now with molten cheese — the upgrade you didn't know you needed",                                   price='70.00',  category='ready_stock',  prep_time_minutes=5,  veg_flag=True),
+    dict(name='Bread Butter',            description="Sliced bread with butter — humble, reliable, and honestly sometimes exactly what you need",                          price='25.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Toast Bread Butter',      description="Toasted bread with butter — one step above plain, infinitely more satisfying",                                       price='30.00',  category='ready_stock',  prep_time_minutes=2,  veg_flag=True),
+    dict(name='Cheese Toast Sandwich',   description="Toasted sandwich oozing with cheese — the one your roommate always steals a bite of",                                price='70.00',  category='ready_stock',  prep_time_minutes=5,  veg_flag=True),
+    dict(name='Grill Sandwich',          description="Press-grilled sandwich with vegetable filling and signature chutney — proper lunch energy",                          price='100.00', category='made_to_order', prep_time_minutes=7,  veg_flag=True),
+    dict(name='Cheese Grill Sandwich',   description="Grilled sandwich stuffed with vegetables and cheese — the canteen's premium tier sandwich",                           price='120.00', category='made_to_order', prep_time_minutes=8,  veg_flag=True),
+    dict(name='Masala Cheese Grill Sandwich', description="The premium sandwich — masala potato + melted cheese + grill marks. The final boss",                            price='170.00', category='made_to_order', prep_time_minutes=10, veg_flag=True),
+
+    # ── EXTRAS ────────────────────────────────────────────────────
+    dict(name='Extra Pav',               description="One extra pav — because one pav is never enough and we respect that",                                               price='5.00',   category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Extra Butter Pav',        description="Pav with butter. You already know. No explanation required",                                                        price='10.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Extra Poori',             description="One extra fluffy puri — for when the bhaji-to-puri ratio isn't adding up",                                          price='5.00',   category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Extra Chappati',          description="One extra soft chapati — because some meals just need one more round",                                               price='7.00',   category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+
+    # ── COLD REFRESHMENTS ─────────────────────────────────────────
+    dict(name='Mosambi Juice',           description="Fresh sweet lime juice — the only cure for a 2 PM crash between double lectures",                                   price='30.00',  category='ready_stock',  prep_time_minutes=2,  veg_flag=True),
+    dict(name='Pineapple Juice',         description="Chilled pineapple juice — tropical, sweet, and dangerously refreshing",                                             price='30.00',  category='ready_stock',  prep_time_minutes=2,  veg_flag=True),
+    dict(name='Orange Juice',            description="Fresh-pressed orange juice — vitamin C for when assignments have destroyed your immune system",                      price='30.00',  category='ready_stock',  prep_time_minutes=2,  veg_flag=True),
+    dict(name='Watermelon Juice',        description="Cold watermelon juice — summer in a glass. Makes Mumbai heat survivable",                                            price='30.00',  category='ready_stock',  prep_time_minutes=2,  veg_flag=True),
+    dict(name='Milkshake',               description="Thick, creamy blended milkshake — the meal replacement you didn't know you needed",                                 price='40.00',  category='ready_stock',  prep_time_minutes=3,  veg_flag=True),
+    dict(name='Cold Drink (200ml)',      description="Glass-bottled cold drink — chilled carbonation for an instant mood reset",                                          price='15.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Buttermilk (Chaas)',      description="Chilled spiced buttermilk — the South Asian answer to post-meal satisfaction",                                      price='15.00',  category='ready_stock',  prep_time_minutes=1,  veg_flag=True),
+    dict(name='Sweet Lassi',             description="Thick, sweet yogurt drink — Punjab's finest contribution to canteen culture",                                       price='25.00',  category='ready_stock',  prep_time_minutes=2,  veg_flag=True),
+    dict(name='Bisleri (Small)',         description="Cold mineral water 250ml — hydration, basic but non-negotiable",                                                    price='10.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
+    dict(name='Bisleri (Big)',           description="Cold mineral water 1 litre — because a small water isn't going to cut it today",                                    price='20.00',  category='ready_stock',  prep_time_minutes=0,  veg_flag=True),
 ]
 
 

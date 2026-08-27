@@ -81,3 +81,22 @@ export const getInsights = (demo = false) =>
 
 // --- Canteen status ---
 export const getCanteenStatus = () => api.get('/canteen-status/')
+
+// --- Recommendations ---
+// excludeIds: array of menu_item IDs already in cart / to skip
+export const getItemRecommendations = (itemId, excludeIds = [], n = 3) =>
+  api.get(`/recommendations/item/${itemId}/`, {
+    params: {
+      ...(excludeIds.length ? { exclude: excludeIds.join(',') } : {}),
+      n,
+    },
+  })
+
+// cartIds: array of menu_item IDs currently in the cart
+export const getCartRecommendations = (cartIds = [], n = 2) =>
+  api.get('/recommendations/cart/', {
+    params: {
+      ids: cartIds.join(','),
+      n,
+    },
+  })

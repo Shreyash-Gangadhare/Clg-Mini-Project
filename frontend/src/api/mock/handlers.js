@@ -408,4 +408,57 @@ export const handlers = [
       },
     })
   }),
+
+  // ----------------------------------------------------------------
+  // RECOMMENDATIONS — item-level
+  // ----------------------------------------------------------------
+  http.get(`${BASE}/recommendations/item/:itemId/`, async ({ request, params }) => {
+    await NET()
+    const url = new URL(request.url)
+    const excludeRaw = url.searchParams.get('exclude') || ''
+    const excludeIds = new Set(excludeRaw.split(',').filter(Boolean).map(Number))
+    const n = Math.min(6, parseInt(url.searchParams.get('n') || '3', 10))
+    const itemId = parseInt(params.itemId, 10)
+    excludeIds.add(itemId)
+
+    const targetItem = MENU_ITEMS.find(m => m.id === itemId)
+    const available = MENU_ITEMS.filter(m => m.is_available && !excludeIds.has(m.id))
+
+    // Category-based fallback (ORDERS sparse in dev)
+    const sameCat = available.filter(m => targetItem && m.ui_category === targetItem.ui_category)
+    const other = available.filter(m => !targetItem || m.ui_category !== targetItem.ui_category)
+    const recs = [...sameCat, ...other].slice(0, n)
+
+    return HttpResponse.json({
+      item_id: itemId,
+      recommendations: recs.map(m => ({
+        id: m.id, name: m.name, price: m.price, emoji: m.emoji,
+        veg_flag: m.veg_flag, is_available: m.is_available, category: m.category,
+      })),
+      source: 'fallback_category',
+    })
+  }),
+
+  // ----------------------------------------------------------------
+  // RECOMMENDATIONS — cart-level
+  // ----------------------------------------------------------------
+  http.get(`${BASE}/recommendations/cart/`, async ({ request }) => {
+    await NET()
+    const url = new URL(request.url)
+    const idsRaw = url.searchParams.get('ids') || ''
+    const cartIds = new Set(idsRaw.split(',').filter(Boolean).map(Number))
+    const n = Math.min(4, parseInt(url.searchParams.get('n') || '2', 10))
+
+    const available = MENU_ITEMS.filter(m => m.is_available && !cartIds.has(m.id))
+    const recs = available.slice(0, n)
+
+    return HttpResponse.json({
+      cart_ids: [...cartIds],
+      recommendations: recs.map(m => ({
+        id: m.id, name: m.name, price: m.price, emoji: m.emoji,
+        veg_flag: m.veg_flag, is_available: m.is_available, category: m.category,
+      })),
+      source: 'fallback_popularity',
+    })
+  }),
 ]

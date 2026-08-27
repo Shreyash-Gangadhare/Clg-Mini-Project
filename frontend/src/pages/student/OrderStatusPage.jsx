@@ -10,6 +10,30 @@ import { getOrderQR } from '../../api/client'
 // Demo: simulate status progression in mock mode
 const MOCK_STATUS_PROGRESSION = ['placed', 'preparing', 'ready', 'picked_up']
 
+// ── Browser Notification helpers ─────────────────────────────────────────────
+// No-op gracefully if the Notification API is unsupported or permission denied.
+
+function requestNotificationPermission() {
+  if (typeof Notification === 'undefined') return
+  if (Notification.permission === 'default') {
+    Notification.requestPermission().catch(() => {})
+  }
+}
+
+function fireReadyNotification(orderToken) {
+  if (typeof Notification === 'undefined') return
+  if (Notification.permission !== 'granted') return
+  try {
+    new Notification('🍽️ Order Ready!', {
+      body: `Token #${orderToken} — head to the counter to pick up your order.`,
+      icon: '/favicon.ico',
+      tag: `campus-eats-order-${orderToken}`,   // prevent duplicate toasts
+    })
+  } catch (_) {
+    // Firefox/iOS may throw even with permission — silently ignore
+  }
+}
+
 export default function OrderStatusPage() {
   const { id } = useParams()
   const [order, setOrder] = useState(null)
@@ -31,6 +55,11 @@ export default function OrderStatusPage() {
 
   useEffect(() => { fetchOrder() }, [fetchOrder])
 
+  // Request notification permission once the order is loaded
+  useEffect(() => {
+    if (order) requestNotificationPermission()
+  }, [!!order]) // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (order?.payment_status === 'paid') {
       getOrderQR(id).then(r => setQrData(r.data)).catch(() => {})
@@ -41,12 +70,15 @@ export default function OrderStatusPage() {
   const handleWsMessage = useCallback((msg) => {
     if (msg.type === 'status_update') {
       setOrder(prev => prev ? { ...prev, status: msg.status } : prev)
-      if (msg.status === 'ready') setShowReadyBanner(true)
+      if (msg.status === 'ready') {
+        setShowReadyBanner(true)
+        fireReadyNotification(order?.token_number ?? msg.token_number ?? '?')
+      }
     }
     if (msg.type === 'refund_issued') {
       alert(`Refund of ₹${msg.amount} issued: ${msg.reason}`)
     }
-  }, [])
+  }, [order?.token_number])
 
   useWebSocket(
     order ? `/ws/orders/${id}/` : null,
@@ -61,7 +93,10 @@ export default function OrderStatusPage() {
     setMockStep(nextStep)
     const nextStatus = MOCK_STATUS_PROGRESSION[nextStep]
     setOrder(prev => prev ? { ...prev, status: nextStatus } : prev)
-    if (nextStatus === 'ready') setShowReadyBanner(true)
+    if (nextStatus === 'ready') {
+      setShowReadyBanner(true)
+      fireReadyNotification(order?.token_number ?? '?')
+    }
   }
 
   if (loading) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getSlots, getSlotCapacities, placeOrder, createPaymentOrder, verifyPayment } from '../../api/client'
+import { getSlots, getSlotCapacities, placeOrder, createPaymentOrder, verifyPayment, getCartRecommendations } from '../../api/client'
 import { useCartStore } from '../../store/cartStore'
 import { useAuthStore } from '../../store/authStore'
 import { SlotPicker } from '../../components/SlotPicker'
@@ -9,6 +9,7 @@ import { NumberFlip } from '../../components/NumberFlip'
 import { ConfettiBurst } from '../../components/ConfettiBurst'
 import { QRDisplay } from '../../components/QRDisplay'
 import { VegDot } from '../../components/VegDot'
+import { RecommendationStrip } from '../../components/RecommendationStrip'
 import { getOrderQR } from '../../api/client'
 
 export default function CheckoutPage() {
@@ -20,10 +21,24 @@ export default function CheckoutPage() {
   const [completedOrder, setCompletedOrder] = useState(null)
   const [qrData, setQrData] = useState(null)
   const [error, setError] = useState('')
+  const [cartRecs, setCartRecs] = useState([])
+  const [cartRecsSource, setCartRecsSource] = useState(null)
 
   const { items, getTotal, selectedSlot, setSlot, clearCart } = useCartStore()
   const { user } = useAuthStore()
   const navigate = useNavigate()
+
+  // Fetch cart recommendations whenever cart items change
+  useEffect(() => {
+    const cartIds = items.map(ci => ci.menuItem.id)
+    if (cartIds.length === 0) { setCartRecs([]); return }
+    getCartRecommendations(cartIds, 2)
+      .then(r => {
+        setCartRecs(r.data.recommendations || [])
+        setCartRecsSource(r.data.source)
+      })
+      .catch(() => setCartRecs([]))
+  }, [items.map(ci => ci.menuItem.id).join(',')]) // re-fetch when cart composition changes
 
   useEffect(() => {
     getSlots().then(r => {
@@ -186,6 +201,18 @@ export default function CheckoutPage() {
                 <NumberFlip value={getTotal()} style={{ fontSize: 'var(--text-2xl)', fontWeight: 900 }} />
               </div>
             </div>
+
+            {/* Cart upsell recommendations */}
+            {cartRecs.length > 0 && (
+              <div style={{ marginBottom: 24 }}>
+                <RecommendationStrip
+                  items={cartRecs}
+                  label="Add to your order"
+                  source={cartRecsSource}
+                  accent="var(--color-accent)"
+                />
+              </div>
+            )}
 
             {/* Slot Picker */}
             <div style={{ marginBottom: 24 }}>

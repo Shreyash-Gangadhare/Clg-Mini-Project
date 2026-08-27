@@ -133,7 +133,7 @@ class TestCooccurrenceMatrix(TestCase):
         make_order(self.user, self.slot, [(self.a, 1), (self.c, 1)])
 
         all_orders = Order.objects.all()
-        cooc = build_cooccurrence_matrix(all_orders)
+        cooc, pivot = build_cooccurrence_matrix(all_orders)
 
         self.assertIn(self.a.id, cooc.index)
         self.assertEqual(cooc.loc[self.a.id, self.b.id], 3)
@@ -142,7 +142,7 @@ class TestCooccurrenceMatrix(TestCase):
         self.assertEqual(cooc.loc[self.a.id, self.a.id], 0)
 
     def test_empty_orders_returns_empty_matrix(self):
-        cooc = build_cooccurrence_matrix(Order.objects.none())
+        cooc, pivot = build_cooccurrence_matrix(Order.objects.none())
         self.assertTrue(cooc.empty)
 
     def test_similarity_values_in_range(self):
@@ -151,8 +151,8 @@ class TestCooccurrenceMatrix(TestCase):
             make_order(self.user, self.slot, [(self.a, 1), (self.b, 1)])
         make_order(self.user, self.slot, [(self.a, 1), (self.c, 1)])
 
-        cooc = build_cooccurrence_matrix(Order.objects.all())
-        sim = compute_cosine_similarity(cooc)
+        cooc, pivot = build_cooccurrence_matrix(Order.objects.all())
+        sim = compute_cosine_similarity(pivot)
 
         self.assertFalse(sim.empty)
         self.assertTrue((sim.values >= 0).all())
@@ -326,3 +326,84 @@ class TestGetCartRecommendations(TestCase):
         )
 
         self.assertNotEqual(result['source'], 'cosine_similarity')
+
+
+# ---------------------------------------------------------------------------
+# Cache-invalidation signal tests (Task 2)
+# ---------------------------------------------------------------------------
+
+class TestCacheInvalidationSignal(TestCase):
+    """
+    Verify that the post_save signal on Order invalidates the similarity-matrix
+    cache exactly when payment_status transitions to 'paid', and not otherwise.
+    """
+
+    def setUp(self):
+        self.user = make_student('cache_signal@sies.edu.in')
+        self.slot = make_slot()
+        self.item_a = make_item('Cache Item A', '20.00')
+        self.item_b = make_item('Cache Item B', '25.00')
+
+    def _seed_cache(self):
+        """Plant a sentinel value in the cache and return the key."""
+        from django.core.cache import cache
+        from apps.orders.signals import _CACHE_KEY_SIM
+        cache.set(_CACHE_KEY_SIM, 'sentinel_value', 60)
+        return _CACHE_KEY_SIM
+
+    def test_cache_invalidated_on_payment_transition_to_paid(self):
+        """
+        Creating an order with payment_status='pending' then updating it to
+        'paid' should delete the similarity-matrix cache entry.
+        """
+        from django.core.cache import cache
+
+        cache_key = self._seed_cache()
+        self.assertEqual(cache.get(cache_key), 'sentinel_value')  # cache is set
+
+        # Create order as pending (no invalidation expected)
+        order = Order.objects.create(
+            user=self.user, slot=self.slot,
+            total_amount='20.00', token_number=1,
+            status='placed', payment_status='pending',
+        )
+        OrderItem.objects.create(
+            order=order, menu_item=self.item_a, quantity=1, price_at_order=self.item_a.price
+        )
+
+        # Cache still intact — 'pending' create should NOT invalidate
+        self.assertEqual(cache.get(cache_key), 'sentinel_value')
+
+        # Re-plant sentinel in case the create did invalidate (defensive)
+        cache.set(cache_key, 'sentinel_value', 60)
+
+        # Now transition to paid
+        order.payment_status = 'paid'
+        order.save(update_fields=['payment_status'])
+
+        # Cache must be cleared
+        self.assertIsNone(cache.get(cache_key), 'Expected cache to be invalidated after transition to paid')
+
+    def test_cache_not_invalidated_on_unrelated_field_update(self):
+        """
+        Updating Order.status (e.g. placed→preparing) without touching
+        payment_status must NOT invalidate the similarity-matrix cache.
+        """
+        from django.core.cache import cache
+
+        # Create a paid order so signal fires once and cache is already clear
+        order = make_order(self.user, self.slot, [(self.item_a, 1)], payment_status='paid')
+
+        # Plant sentinel after the paid-order creation (which would have cleared it)
+        cache_key = self._seed_cache()
+        self.assertEqual(cache.get(cache_key), 'sentinel_value')
+
+        # Update an unrelated field — status changes, payment_status stays 'paid'
+        order.status = 'preparing'
+        order.save(update_fields=['status'])
+
+        # Cache must NOT be cleared — payment_status didn't change
+        self.assertEqual(
+            cache.get(cache_key), 'sentinel_value',
+            'Cache should NOT be invalidated on a non-payment_status update'
+        )

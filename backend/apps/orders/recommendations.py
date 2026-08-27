@@ -51,29 +51,29 @@ DEFAULT_TOP_N: int = 3
 # Matrix construction
 # ---------------------------------------------------------------------------
 
-def build_cooccurrence_matrix(order_qs) -> pd.DataFrame:
+def build_cooccurrence_matrix(order_qs) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Build a symmetric item×item co-occurrence count matrix.
+    Build an item×item co-occurrence count matrix **and** the underlying
+    order-item pivot table.
 
-    Each cell ``matrix[i][j]`` is the number of orders in which both
-    item ``i`` and item ``j`` were ordered together.  The diagonal
-    (item co-occurring with itself) is zeroed out so it cannot appear
-    as a self-recommendation.
+    Both are returned because cosine similarity must be computed from the
+    *pivot columns* (each item's order-appearance vector), not from the
+    co-occurrence matrix rows.  Callers that only need the co-occurrence
+    counts can ignore the pivot.
 
     Args:
-        order_qs: Django queryset of ``Order`` instances.  Should cover
-            the order history you want recommendations based on.  Cancelled
-            orders are included here — a co-occurrence is still informative
-            even if the order was later cancelled.
+        order_qs: Django queryset of ``Order`` instances.  Cancelled orders
+            are included — a co-occurrence is still informative even if the
+            order was later cancelled.
 
     Returns:
-        A ``pd.DataFrame`` with both index and columns equal to the set
-        of all ``menu_item_id`` values found in the order history.
-        Returns an empty ``DataFrame`` if there are no order items.
+        ``(cooc, pivot)`` where:
+        - ``cooc``: symmetric item×item ``DataFrame`` (diagonal zeroed).
+        - ``pivot``: order×item binary presence ``DataFrame``.
+        Both return empty ``DataFrame``s if there are no order items.
     """
     from apps.orders.models import OrderItem
 
-    # Pull (order_id, menu_item_id) pairs efficiently
     pairs = list(
         OrderItem.objects
         .filter(order__in=order_qs)
@@ -81,56 +81,61 @@ def build_cooccurrence_matrix(order_qs) -> pd.DataFrame:
     )
 
     if not pairs:
-        return pd.DataFrame()
+        return pd.DataFrame(), pd.DataFrame()
 
     df = pd.DataFrame(pairs, columns=['order_id', 'item_id'])
 
-    # Pivot: rows = orders, cols = items, values = 1 if ordered else 0
+    # pivot: rows=orders, cols=items, values=1 if ordered else 0
     pivot = (
         df.assign(present=1)
         .pivot_table(index='order_id', columns='item_id', values='present', fill_value=0)
     )
 
-    # Co-occurrence = pivot.T @ pivot
-    cooc = pivot.T @ pivot
+    # Co-occurrence matrix (only needed for reference / callers that want counts)
+    raw = (pivot.T @ pivot).to_numpy(dtype=float, copy=True)
+    np.fill_diagonal(raw, 0)
+    item_ids = [int(x) for x in pivot.columns.tolist()]
+    cooc = pd.DataFrame(raw, index=item_ids, columns=item_ids)
 
-    # NumPy 2.x returns a read-only view from matrix multiplication.
-    # We need a writeable copy before zeroing the diagonal.
-    cooc = cooc.copy()
+    # Rename pivot columns to plain ints too (consistency)
+    pivot.columns = item_ids
 
-    # Zero the diagonal (self-similarity is meaningless for recommendations)
-    np.fill_diagonal(cooc.values, 0)
-
-    return cooc
+    return cooc, pivot
 
 
-def compute_cosine_similarity(cooc: pd.DataFrame) -> pd.DataFrame:
+def compute_cosine_similarity(pivot: pd.DataFrame) -> pd.DataFrame:
     """
-    Normalise a co-occurrence matrix to produce item-to-item cosine similarity.
+    Compute item-to-item cosine similarity from the order-item pivot matrix.
 
-    Cosine similarity treats each item's co-occurrence row as a vector and
-    measures the angle between vectors.  Items with similar ordering patterns
-    score highly even if their absolute co-occurrence counts differ.
+    Each item's *column* in the pivot is its binary appearance vector across
+    all orders.  Two items that frequently appear in the same orders will have
+    a high cosine similarity between their appearance vectors.
 
     Args:
-        cooc: Square symmetric co-occurrence ``DataFrame`` produced by
+        pivot: order×item binary presence ``DataFrame`` produced by
             :func:`build_cooccurrence_matrix`.
 
     Returns:
-        A ``DataFrame`` of the same shape with values in ``[0.0, 1.0]``.
-        Returns an empty ``DataFrame`` if ``cooc`` is empty.
+        A square item×item ``DataFrame`` with values in ``[0.0, 1.0]``
+        (diagonal zeroed so an item cannot recommend itself).
+        Returns an empty ``DataFrame`` if ``pivot`` is empty.
     """
-    if cooc.empty:
+    if pivot.empty:
         return pd.DataFrame()
 
-    mat = cooc.values.astype(float)
-    norms = np.linalg.norm(mat, axis=1, keepdims=True)
-    # Avoid division by zero for items with no co-occurrences
-    norms = np.where(norms == 0, 1.0, norms)
-    normed = mat / norms
+    # Transpose: rows = items, cols = orders.  Each row is an item's
+    # presence vector across all orders.
+    mat = pivot.values.astype(float).T  # shape (n_items, n_orders)
 
-    sim_mat = normed @ normed.T
-    return pd.DataFrame(sim_mat, index=cooc.index, columns=cooc.columns)
+    norms = np.sqrt((mat ** 2).sum(axis=1, keepdims=True))
+    norms = np.where(norms == 0, 1.0, norms)
+    normed = mat / norms  # unit vectors
+
+    sim_mat = normed @ normed.T  # (n_items, n_items)
+    np.fill_diagonal(sim_mat, 0.0)  # no self-recommendation
+
+    item_ids = list(pivot.columns)
+    return pd.DataFrame(sim_mat, index=item_ids, columns=item_ids)
 
 
 # ---------------------------------------------------------------------------
@@ -319,8 +324,8 @@ def get_item_recommendations(
 
     # ── Build/reuse similarity matrix ───────────────────────────────────────
     if sim_df is None or sim_df.empty:
-        cooc = build_cooccurrence_matrix(order_qs)
-        sim_df = compute_cosine_similarity(cooc)
+        _cooc, pivot = build_cooccurrence_matrix(order_qs)
+        sim_df = compute_cosine_similarity(pivot)
 
     # ── Path 2: item not in matrix (brand-new item) ──────────────────────────
     if sim_df.empty or item_id not in sim_df.index:
@@ -389,8 +394,8 @@ def get_cart_recommendations(
         return {'cart_ids': cart_ids, 'recommendations': recs, 'source': source}
 
     if sim_df is None or sim_df.empty:
-        cooc = build_cooccurrence_matrix(order_qs)
-        sim_df = compute_cosine_similarity(cooc)
+        _cooc, pivot = build_cooccurrence_matrix(order_qs)
+        sim_df = compute_cosine_similarity(pivot)
 
     if sim_df.empty:
         recs, source = _popularity_fallback(exclude_ids, menu_qs, order_qs, n)
